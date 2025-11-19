@@ -8,5 +8,8 @@
   "keywords": [],
   "author": "epeters95",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "napi-wasm": "^1.1.3"
+  }
 }
