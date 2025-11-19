@@ -12,7 +12,8 @@ async function main() {
 //     '/sandbox': '/path/on/host',
 //   },
   });
-  const bytes = await fs.readFile(new URL('./hello.wasm', import.meta.url));
+  let path = './test.wasm'
+  const bytes = await fs.readFile(new URL(path, import.meta.url));
   // works in Node >=14 with --experimental-modules or with CommonJS use __dirname
 
   const { instance } = await WebAssembly.instantiate(bytes, wasi.getImportObject());
