@@ -1,6 +1,6 @@
-name: Build Zephyr Firmware
+name: Build Zephyr for Pi Zero 2
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
@@ -11,23 +11,21 @@ jobs:
         with:
           path: app
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
       - name: Setup Zephyr
         uses: zephyrproject-rtos/action-zephyr-setup@v1
         with:
           app-path: app
-          toolchains: arm-zephyr-eabi # Adjust if using RISC-V (Pico 2)
+          # We point specifically to the file we just created
+          manifest-path: app/west.yml
+          toolchains: zephyr-sdk-arm64 # Note the arm64 toolchain
 
       - name: Build Firmware
         run: |
-          west build -b rpi_pico app/  # Replace rpi_pico with your target board
+          # Use rpi_4b as the board target for the Zero 2 (Cortex-A53)
+          west build -p always -b rpi_4b app/ 
 
-      - name: Upload Artifact
+      - name: Upload Kernel Image
         uses: actions/upload-artifact@v4
         with:
-          name: zephyr-firmware
-          path: build/zephyr/zephyr.uf2 # Or .bin / .elf depending on your needs
+          name: zephyr-kernel
+          path: build/zephyr/zephyr.bin
