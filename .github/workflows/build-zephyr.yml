@@ -1,0 +1,33 @@
+name: Build Zephyr Firmware
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: app
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Setup Zephyr
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: app
+          toolchains: arm-zephyr-eabi # Adjust if using RISC-V (Pico 2)
+
+      - name: Build Firmware
+        run: |
+          west build -b rpi_pico app/  # Replace rpi_pico with your target board
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zephyr-firmware
+          path: build/zephyr/zephyr.uf2 # Or .bin / .elf depending on your needs
