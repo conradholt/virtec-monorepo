@@ -57,13 +57,21 @@ jobs:
 
       - name: Cross-Compile OpenOCD for Pi Zero 2 (ARM64)
         run: |
-          # Depth 1 clone saves ~500MB
+          # 1. Clone only the main repo
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
+          
+          # 2. Fetch the required submodules (JimTCL and Libjaylink) with depth 1
+          git submodule update --init --recursive --depth 1
+          
           ./bootstrap
+          
+          # 3. Set toolchain variables
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=${CROSS_COMPILE}gcc
           export CPP=${CROSS_COMPILE}cpp
+          
+          # 4. Configure with internal jimtcl explicitly
           ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
                       --enable-bcm2835gpio \
@@ -72,6 +80,7 @@ jobs:
                       --enable-internal-libjaylink \
                       --disable-usb \
                       --disable-libftdi
+          
           make -j$(nproc)
 
       - name: Sanity Check Binary
