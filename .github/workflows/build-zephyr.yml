@@ -10,6 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf /usr/lib/jvm
+          df -h # Show space after cleanup
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -23,6 +32,7 @@ jobs:
             autoconf libtool pkg-config \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
             crossbuild-essential-arm64
+          sudo apt-get clean # Clear apt cache
 
       - name: Install West
         run: pip3 install west
@@ -31,7 +41,8 @@ jobs:
         run: |
           west init ~/zephyrproject
           cd ~/zephyrproject
-          west update
+          # Narrow update with depth 1 saves ~4GB of disk space
+          west update --narrow --fetch-opt=--depth=1
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
 
@@ -40,20 +51,19 @@ jobs:
           cd ~
           wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64.tar.xz
           tar xf zephyr-sdk-0.16.8_linux-x86_64.tar.xz
+          rm zephyr-sdk-0.16.8_linux-x86_64.tar.xz # Delete tarball immediately
           cd zephyr-sdk-0.16.8
           ./setup.sh -t arm-zephyr-eabi -c
 
       - name: Cross-Compile OpenOCD for Pi Zero 2 (ARM64)
         run: |
+          # Depth 1 clone saves ~500MB
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
           ./bootstrap
-          
-          # Set toolchain variables for the cross-compiler
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=${CROSS_COMPILE}gcc
           export CPP=${CROSS_COMPILE}cpp
-          
           ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
                       --enable-bcm2835gpio \
@@ -62,19 +72,16 @@ jobs:
                       --enable-internal-libjaylink \
                       --disable-usb \
                       --disable-libftdi
-          
           make -j$(nproc)
 
       - name: Sanity Check Binary
-        run: |
-          # This confirms the binary is ARM64 and not x86
-          file ~/openocd/src/openocd
+        run: file ~/openocd/src/openocd
 
       - name: Build Zephyr Firmware
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
-          # Ensure you use the target board relevant to your project
+          # Replace 'rpi_pico' with your specific RPi Zero 2 board if different
           west build -b rpi_pico samples/basic/blinky
 
       - name: Upload Pi-Ready Artifacts
