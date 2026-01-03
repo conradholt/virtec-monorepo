@@ -41,15 +41,26 @@ jobs:
           cd zephyr-sdk-0.16.8
           ./setup.sh -t arm-zephyr-eabi -c
 
-      - name: Build OpenOCD for RPi GPIO
+      - name: Cross-Compile OpenOCD for Pi Zero 2 (ARM64)
         run: |
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
           ./bootstrap
-          # We enable bcm2835gpio for the Raspberry Pi Zero 2 hardware
-          ./configure --enable-sysfsgpio --enable-bcm2835gpio --enable-ftdi
+          
+          # Set up the cross-compile environment
+          export CHOST=aarch64-linux-gnu
+          export CC=$CHOST-gcc
+          
+          # Added --disable-werror to prevent small warnings from stopping the build
+          # and ensured internal jimtcl is used.
+          ./configure --host=$CHOST \
+                      --enable-sysfsgpio \
+                      --enable-bcm2835gpio \
+                      --disable-werror \
+                      --enable-internal-jimtcl \
+                      --enable-internal-libjaylink
+          
           make -j$(nproc)
-          sudo make install
 
       - name: Build Zephyr for Raspberry Pi Zero 2
         run: |
