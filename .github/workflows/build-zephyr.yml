@@ -41,3 +41,14 @@ jobs:
 					west zephyr-export
 					pip3 install -user -r zephyr/scripts/requirements.txt
 
+      - name: Install OpenOCD
+        run: |
+					sudo apt-get install git autoconf libtool make pkg-config libusb-1.0-0 libusb-1.0-0-dev 
+					sudo mkdir -m 775 /opt 
+					sudo chgrp adm /opt 
+					git clone http://openocd.zylin.com/openocd /opt/openocd 
+					cd /opt/openocd
+					./bootstrap 
+					./configure --enable-sysfsgpio --enable-bcm2835gpio
+					make
+					sudo make install
