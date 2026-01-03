@@ -14,7 +14,7 @@ Before anything else credit where its due , this doc uses this [Great Template](
 
 From Gemini 3 Fast / Flash 
 
-'''
+```
 The Initial Setup (SD Card)
 Before you can use JTAG or OpenOCD, the Raspberry Pi hardware needs a way to boot. Unlike a standard microcontroller (like an STM32) that has built-in flash memory, the Pi Zero 2 boots from the microSD Card.
 • Step A: Format an SD card to FAT32.
@@ -24,7 +24,7 @@ Before you can use JTAG or OpenOCD, the Raspberry Pi hardware needs a way to boo
 • fixup.dat
 • Step C: Rename your compiled Zephyr binary (zephyr.bin) to kernel8.img (for 64-bit) and place it on the root of the SD card.
 • Step D: Create a config.txt file on the SD card to tell the Pi how to boot your kernel.
-'''
+```
 
 ## Built With
 
