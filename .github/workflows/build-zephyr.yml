@@ -1,4 +1,4 @@
-name: Zephyr RPi Zero 2 Build
+name: Zephyr & OpenOCD Cross-Compile for RPi Zero 2
 
 on:
   push:
@@ -13,14 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install System Dependencies
+      - name: Install System & Cross-Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             git cmake ninja-build gperf ccache dfu-util \
             device-tree-compiler wget python3-dev python3-pip \
-            python3-setuptools python3-tk python3-wheel xz-utils file \
-            make gcc libsdl2-dev libusb-1.0-0-dev libftdi1-dev autoconf libtool
+            python3-setuptools xz-utils file make gcc \
+            autoconf libtool pkg-config \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+            crossbuild-essential-arm64
 
       - name: Install West
         run: pip3 install west
@@ -33,7 +35,7 @@ jobs:
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
 
-      - name: Install Zephyr SDK (ARM Toolchain)
+      - name: Install Zephyr SDK
         run: |
           cd ~
           wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64.tar.xz
@@ -47,32 +49,38 @@ jobs:
           cd ~/openocd
           ./bootstrap
           
-          # Set up the cross-compile environment
-          export CHOST=aarch64-linux-gnu
-          export CC=$CHOST-gcc
+          # Set toolchain variables for the cross-compiler
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CC=${CROSS_COMPILE}gcc
+          export CPP=${CROSS_COMPILE}cpp
           
-          # Added --disable-werror to prevent small warnings from stopping the build
-          # and ensured internal jimtcl is used.
-          ./configure --host=$CHOST \
+          ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
                       --enable-bcm2835gpio \
                       --disable-werror \
                       --enable-internal-jimtcl \
-                      --enable-internal-libjaylink
+                      --enable-internal-libjaylink \
+                      --disable-usb \
+                      --disable-libftdi
           
           make -j$(nproc)
 
-      - name: Build Zephyr for Raspberry Pi Zero 2
+      - name: Sanity Check Binary
+        run: |
+          # This confirms the binary is ARM64 and not x86
+          file ~/openocd/src/openocd
+
+      - name: Build Zephyr Firmware
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
-          # Replacing with the correct board target for RPi Zero 2
-          west build -b rpi_pico samples/basic/blinky 
+          # Ensure you use the target board relevant to your project
+          west build -b rpi_pico samples/basic/blinky
 
-      - name: Upload Artifacts
+      - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rpi-zero2-firmware
+          name: pi-zero2-bundle
           path: |
             ~/zephyrproject/zephyr/build/zephyr/zephyr.bin
-            /usr/local/bin/openocd
+            ~/openocd/src/openocd
