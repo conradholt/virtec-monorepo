@@ -29,26 +29,26 @@ jobs:
           pip3 install west imgtool
 
       - name: Initialize Zephyr Workspace
-				run: |
-				  mkdir -p/usr/local/gnuarmemb
-					curl https://developer.arm.com/-/media/Files/downLoads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-aarch64-linux.tar.bz2 | sudo tar --strip-components=1 --directory=/usr/local/gnuarmemb ~jxf -
-					echo 'export ZEPHYR_TOOLCHAIN_VARIANT=guarmemb' | sudo tee -a /etc/profile.d/zephyr.sh echo
-					echo 'export GNUARMEMB_TOOLCHAIN_PATH=/usr/local/gnuarmemb/' | sudo tee -a /etc/profile.d/zephyr.sh
-					echo 'export PATH=${HOME)/.local/bin:${PATH}' | sudo tee -a /etc/profile.d/zephyr.sh
-					west init ~/zephyrproject 
-					cd ~/zephyrproject 
-					west update
-					west zephyr-export
-					pip3 install -user -r zephyr/scripts/requirements.txt
+        run: |
+          sudo mkdir -p /usr/local/gnuarmemb
+          curl -L https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2 | sudo tar -xjf - --strip-components=1 --directory=/usr/local/gnuarmemb
+          echo 'export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb' | sudo tee -a /etc/profile.d/zephyr.sh
+          echo 'export GNUARMEMB_TOOLCHAIN_PATH=/usr/local/gnuarmemb/' | sudo tee -a /etc/profile.d/zephyr.sh
+          echo "export PATH=\$HOME/.local/bin:\$PATH" | sudo tee -a /etc/profile.d/zephyr.sh
+          source /etc/profile.d/zephyr.sh
+          west init ~/zephyrproject 
+          cd ~/zephyrproject 
+          west update
+          west zephyr-export
+          pip3 install --user -r zephyr/scripts/requirements.txt
 
       - name: Install OpenOCD
         run: |
-					sudo apt-get install git autoconf libtool make pkg-config libusb-1.0-0 libusb-1.0-0-dev 
-					sudo mkdir -m 775 /opt 
-					sudo chgrp adm /opt 
-					git clone http://openocd.zylin.com/openocd /opt/openocd 
-					cd /opt/openocd
-					./bootstrap 
-					./configure --enable-sysfsgpio --enable-bcm2835gpio
-					make
-					sudo make install
+          sudo apt-get install -y git autoconf libtool make pkg-config libusb-1.0-0 libusb-1.0-0-dev 
+          sudo mkdir -p -m 775 /opt 
+          git clone --depth 1 https://github.com/openocd-org/openocd.git /opt/openocd 
+          cd /opt/openocd
+          ./bootstrap 
+          ./configure --enable-sysfsgpio --enable-bcm2835gpio
+          make
+          sudo make install
