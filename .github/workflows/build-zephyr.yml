@@ -72,7 +72,7 @@ jobs:
       - name: Build Zephyr for Pi Zero 2 (rpi_3)
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
-          cd ~/zephyrproject/zephyr
+          cd $ZEPHYR_BASE/..
           
           # Create a basic configuration for the ARM64 board
           cat <<EOF > samples/basic/blinky/prj.conf
