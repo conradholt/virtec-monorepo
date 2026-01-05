@@ -33,21 +33,32 @@ jobs:
       - name: Install West
         run: pip3 install west
 
-      - name: Initialize Zephyr Workspace (Manifest-First)
+      - name: Initialize Zephyr Workspace
         run: |
-          mkdir ~/zephyrproject
-          cd ~/zephyrproject
-          west init -m https://github.com/zephyrproject-rtos/zephyr --mr main
+          # 1. Start fresh in a clean directory
+          mkdir zephyr-workspace
+          cd zephyr-workspace
           
-          # 1. Fetch the main Zephyr repo (the 'Master List')
-          west update --narrow --fetch-opt=--depth=1 zephyr
+          # 2. Initialize and load the manifest immediately
+          # This tells West exactly where the 'Master List' is
+          west init -m https://github.com/zephyrproject-rtos/zephyr --mr main .
           
-          # 2. Fetch only the critical modules for RPi Zero 2
-          # 'cmsis' and 'picolibc' are mandatory for ARM64 C-code support
-          west update --narrow --fetch-opt=--depth=1 cmsis hal_broadcom picolibc
+          # 3. Configure West to ONLY care about core and broadcom
+          # This replaces the specific project names that were failing
+          west config manifest.group-filter -- "+cmsis,+broadcom,+picolibc"
           
+          # 4. Now update. Because the filter is set, it will find exactly
+          # what is needed for the RPi Zero 2 without getting lost.
+          west update --narrow --fetch-opt=--depth=1
+          
+          # 5. Export and install Python requirements
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
+          
+          # 6. Set ZEPHYR_BASE for the next steps
+          echo "ZEPHYR_BASE=$(pwd)/zephyr" >> $GITHUB_ENV
+
+
 
       - name: Install Zephyr SDK (ARM64)
         run: |
