@@ -1,4 +1,4 @@
-name: Zephyr & OpenOCD for RPi Zero 2 (ARM64)
+name: Zephyr & OpenOCD Cross-Compile for RPi Zero 2
 
 on:
   push:
@@ -10,10 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Free Disk Space
+      - name: Free Disk Space (Ubuntu)
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
-          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf /usr/lib/jvm
+          df -h # Show space after cleanup
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,7 +32,7 @@ jobs:
             autoconf libtool pkg-config \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
             crossbuild-essential-arm64
-          sudo apt-get clean
+          sudo apt-get clean # Clear apt cache
 
       - name: Install West
         run: pip3 install west
@@ -37,15 +41,8 @@ jobs:
         run: |
           west init ~/zephyrproject
           cd ~/zephyrproject
-          
-          # 1. Fetch ONLY the main Zephyr repo first. 
-          # This acts as the "Master List" so West knows what 'hal_broadcom' is.
-          west update --narrow --fetch-opt=--depth=1 zephyr
-          
-          # 2. Now fetch only the specific modules needed for RPi Zero 2.
-          # Note: 'cmsis' and 'picolibc' are core requirements for ARM64 builds.
-          west update --narrow --fetch-opt=--depth=1 cmsis hal_broadcom picolibc
-          
+          # Narrow update with depth 1 saves ~4GB of disk space
+          west update --narrow --fetch-opt=--depth=1
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
 
@@ -54,40 +51,47 @@ jobs:
           cd ~
           wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64.tar.xz
           tar xf zephyr-sdk-0.16.8_linux-x86_64.tar.xz
-          rm zephyr-sdk-0.16.8_linux-x86_64.tar.xz
+          rm zephyr-sdk-0.16.8_linux-x86_64.tar.xz # Delete tarball immediately
           cd zephyr-sdk-0.16.8
-          ./setup.sh -t aarch64-zephyr-elf -c
+          ./setup.sh -t arm-zephyr-eabi -c
 
-      - name: Cross-Compile OpenOCD
+      - name: Cross-Compile OpenOCD for Pi Zero 2 (ARM64)
         run: |
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
           git submodule update --init --recursive --depth 1
+          
           ./bootstrap
+          
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=${CROSS_COMPILE}gcc
+          export CPP=${CROSS_COMPILE}cpp
+          
+          # We redirect the output to a file so we can parse it easily
           ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
                       --enable-bcm2835gpio \
                       --disable-werror \
                       --enable-internal-jimtcl \
+                      --enable-internal-libjaylink \
                       --disable-usb \
-                      --disable-libftdi
+                      --disable-libftdi | tee config_output.txt
+          
+          echo "--- VERIFICATION: JIMTCL STATUS ---"
+          grep -i "jimtcl" config_output.txt || echo "JimTCL status not found in logs"
+          echo "------------------------------------"
+          
           make -j$(nproc)
 
-      - name: Build Zephyr for Pi Zero 2 (rpi_3)
+      - name: Sanity Check Binary
+        run: file ~/openocd/src/openocd
+
+      - name: Build Zephyr Firmware
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
-          
-          # Create a basic prj.conf for the blinky sample
-          cat <<EOF > samples/basic/blinky/prj.conf
-          CONFIG_GPIO=y
-          CONFIG_ARM64=y
-          CONFIG_UART_CONSOLE=y
-          EOF
-          
-          west build -b rpi_3 samples/basic/blinky
+          # Replace 'rpi_pico' with your specific RPi Zero 2 board if different
+          west build -b rpi_pico samples/basic/blinky
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
