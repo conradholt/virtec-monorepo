@@ -75,7 +75,7 @@ jobs:
           cd $ZEPHYR_BASE/..
           
           # Create a basic configuration for the ARM64 board
-          cat <<EOF > samples/basic/blinky/prj.conf
+          cat <<EOF > $ZEPHYR_BASE/samples/basic/blinky/prj.conf
           CONFIG_GPIO=y
           CONFIG_ARM64=y
           CONFIG_UART_CONSOLE=y
