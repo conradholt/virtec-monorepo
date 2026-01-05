@@ -33,12 +33,18 @@ jobs:
       - name: Install West
         run: pip3 install west
 
-      - name: Initialize Zephyr Workspace
+      - name: Initialize Zephyr Workspace (Selective)
         run: |
           west init ~/zephyrproject
           cd ~/zephyrproject
-          # We use depth 1 but NOT --narrow to ensure the RPi 3/Broadcom HAL is found
-          west update --fetch-opt=--depth=1
+          # Only fetch the core and the specific HALs needed for RPi Zero 2
+          west update --narrow --fetch-opt=--depth=1 \
+            zephyr \
+            cmsis \
+            hal_broadcom \
+            hal_arm64 \
+            modules/lib/picolibc
+          
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
 
@@ -69,32 +75,17 @@ jobs:
           make -j$(nproc)
 
       - name: Build Zephyr for Pi Zero 2 (rpi_3)
-        env:
-          SSID: ${{ secrets.WIFI_SSID }}
-          WIFI_PASS: ${{ secrets.WIFI_PASSWORD }}
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
-          SAMPLE_DIR=~/zephyrproject/zephyr/samples/basic/blinky
+          cd ~/zephyrproject/zephyr
           
-          # Inject WiFi Secrets into header
-          echo "#define MY_SSID \"$SSID\"" > $SAMPLE_DIR/src/wifi_credentials.h
-          echo "#define MY_PASSWORD \"$WIFI_PASS\"" >> $SAMPLE_DIR/src/wifi_credentials.h
-          
-          # Create prj.conf with ARM64 and Networking
-          cat <<EOF > $SAMPLE_DIR/prj.conf
-          CONFIG_NETWORKING=y
-          CONFIG_NET_L2_WIFI_MGMT=y
-          CONFIG_NET_IPV4=y
-          CONFIG_NET_TCP=y
-          CONFIG_NET_DHCPV4=y
-          CONFIG_WIFI=y
-          CONFIG_WIFI_NM=y
-          CONFIG_SHELL=y
-          CONFIG_SHELL_BACKEND_TELNET=y
+          # Create a basic prj.conf for the blinky sample
+          cat <<EOF > samples/basic/blinky/prj.conf
+          CONFIG_GPIO=y
           CONFIG_ARM64=y
+          CONFIG_UART_CONSOLE=y
           EOF
           
-          cd ~/zephyrproject/zephyr
           west build -b rpi_3 samples/basic/blinky
 
       - name: Upload Pi-Ready Artifacts
