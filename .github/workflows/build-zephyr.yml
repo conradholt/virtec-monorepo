@@ -33,17 +33,18 @@ jobs:
       - name: Install West
         run: pip3 install west
 
-      - name: Initialize Zephyr Workspace (Selective)
+      - name: Initialize Zephyr Workspace
         run: |
           west init ~/zephyrproject
           cd ~/zephyrproject
-          # Only fetch the core and the specific HALs needed for RPi Zero 2
-          west update --narrow --fetch-opt=--depth=1 \
-            zephyr \
-            cmsis \
-            hal_broadcom \
-            hal_arm64 \
-            modules/lib/picolibc
+          
+          # 1. Fetch ONLY the main Zephyr repo first. 
+          # This acts as the "Master List" so West knows what 'hal_broadcom' is.
+          west update --narrow --fetch-opt=--depth=1 zephyr
+          
+          # 2. Now fetch only the specific modules needed for RPi Zero 2.
+          # Note: 'cmsis' and 'picolibc' are core requirements for ARM64 builds.
+          west update --narrow --fetch-opt=--depth=1 cmsis hal_broadcom picolibc
           
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
