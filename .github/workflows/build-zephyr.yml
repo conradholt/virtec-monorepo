@@ -37,7 +37,8 @@ jobs:
         run: |
           west init ~/zephyrproject
           cd ~/zephyrproject
-          west update --narrow --fetch-opt=--depth=1
+          # We use depth 1 but NOT --narrow to ensure the RPi 3/Broadcom HAL is found
+          west update --fetch-opt=--depth=1
           west zephyr-export
           pip3 install --user -r zephyr/scripts/requirements.txt
 
@@ -48,7 +49,7 @@ jobs:
           tar xf zephyr-sdk-0.16.8_linux-x86_64.tar.xz
           rm zephyr-sdk-0.16.8_linux-x86_64.tar.xz
           cd zephyr-sdk-0.16.8
-          ./setup.sh -t aarch64-zephyr-elf -c # Note: Changed to aarch64
+          ./setup.sh -t aarch64-zephyr-elf -c
 
       - name: Cross-Compile OpenOCD
         run: |
@@ -58,32 +59,29 @@ jobs:
           ./bootstrap
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=${CROSS_COMPILE}gcc
-          export CPP=${CROSS_COMPILE}cpp
           ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
                       --enable-bcm2835gpio \
                       --disable-werror \
                       --enable-internal-jimtcl \
-                      --enable-internal-libjaylink \
                       --disable-usb \
                       --disable-libftdi
           make -j$(nproc)
 
-      - name: Build Zephyr for Pi Zero 2 (Cortex-A53)
+      - name: Build Zephyr for Pi Zero 2 (rpi_3)
         env:
           SSID: ${{ secrets.WIFI_SSID }}
           WIFI_PASS: ${{ secrets.WIFI_PASSWORD }}
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
-          cd ~/zephyrproject/zephyr/samples/basic/blinky
+          SAMPLE_DIR=~/zephyrproject/zephyr/samples/basic/blinky
           
-          # Inject WiFi Secrets
-          mkdir -p src
-          echo "#define MY_SSID \"$SSID\"" > src/wifi_credentials.h
-          echo "#define MY_PASSWORD \"$WIFI_PASS\"" >> src/wifi_credentials.h
+          # Inject WiFi Secrets into header
+          echo "#define MY_SSID \"$SSID\"" > $SAMPLE_DIR/src/wifi_credentials.h
+          echo "#define MY_PASSWORD \"$WIFI_PASS\"" >> $SAMPLE_DIR/src/wifi_credentials.h
           
-          # Create prj.conf
-          cat <<EOF > prj.conf
+          # Create prj.conf with ARM64 and Networking
+          cat <<EOF > $SAMPLE_DIR/prj.conf
           CONFIG_NETWORKING=y
           CONFIG_NET_L2_WIFI_MGMT=y
           CONFIG_NET_IPV4=y
@@ -102,7 +100,7 @@ jobs:
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pi-zero2-aarch64-bundle
+          name: pi-zero2-bundle
           path: |
             ~/zephyrproject/zephyr/build/zephyr/zephyr.bin
             ~/openocd/src/openocd
