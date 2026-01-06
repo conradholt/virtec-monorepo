@@ -82,6 +82,7 @@ jobs:
           EOF
           
           # Target rpi_3 (identical SoC to Zero 2)
+          west boards
           west build -b rpi_3/bcm2710/a53 $ZEPHYR_BASE/samples/basic/blinky
 
       - name: Cross-Compile OpenOCD for RPi
