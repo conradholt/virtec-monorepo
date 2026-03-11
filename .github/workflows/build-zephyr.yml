@@ -91,12 +91,12 @@ jobs:
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
           # Replace 'rpi_pico' with your specific RPi Zero 2 board if different
-          west build -b rpi_pico samples/basic/blinky
+          west build -b rpi_3 samples/hello_world
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pi-zero2-bundle
+          name: pi3-bundle
           path: |
-            ~/zephyrproject/zephyr/build/zephyr/zephyr.bin
+            ~/zephyrproject/zephyr/build/zephyr/zephyr.elf
             ~/openocd/src/openocd
