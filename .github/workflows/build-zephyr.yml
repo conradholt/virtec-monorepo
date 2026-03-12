@@ -1,4 +1,4 @@
-name: Zephyr & OpenOCD Cross-Compile for RPi Zero 2
+name: Zephyr & OpenOCD Cross-Compile for RPi
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
           # Replace 'rpi_pico' with your specific RPi Zero 2 board if different
-          west build -b rpi_3 samples/hello_world
+          west build -b rpi_4b samples/hello_world
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
