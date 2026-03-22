@@ -7,6 +7,5 @@
 	url = https://github.com/Xilinx/qemu.git
 	branch = xlnx_rel_v2025.2
 [submodule "engine/qemu-official"]
-	path = engine/qemu
+	path = engine/qemu-official
 	url = https://github.com/qemu/qemu.git
-	branch = master
