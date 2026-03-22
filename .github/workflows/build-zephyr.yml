@@ -60,13 +60,13 @@ jobs:
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
           git submodule update --init --recursive --depth 1
-          
+
           ./bootstrap
-          
+
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CC=${CROSS_COMPILE}gcc
           export CPP=${CROSS_COMPILE}cpp
-          
+
           # We redirect the output to a file so we can parse it easily
           ./configure --host=aarch64-linux-gnu \
                       --enable-sysfsgpio \
@@ -76,11 +76,11 @@ jobs:
                       --enable-internal-libjaylink \
                       --disable-usb \
                       --disable-libftdi | tee config_output.txt
-          
+
           echo "--- VERIFICATION: JIMTCL STATUS ---"
           grep -i "jimtcl" config_output.txt || echo "JimTCL status not found in logs"
           echo "------------------------------------"
-          
+
           make -j$(nproc)
 
       - name: Sanity Check Binary
@@ -90,8 +90,15 @@ jobs:
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
           cd ~/zephyrproject/zephyr
-          # Replace 'rpi_pico' with your specific RPi Zero 2 board if different
-          west build -b rpi_4b samples/hello_world
+          # Replace after -b with your specific raspberry pi if different
+          # west build -b rpi_4b samples/hello_world
+          west build -b qemu_cortex_a53 samples/synchronization
+
+      - name: Run Emulation
+        run: |
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
+          cd ~/zephyrproject/zephyr
+          west build -t run -v
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
