@@ -49,13 +49,13 @@ jobs:
       - name: Install Zephyr SDK
         run: |
           cd ~
-          wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.16.8/zephyr-sdk-0.16.8_linux-x86_64.tar.xz
-          tar xf zephyr-sdk-0.16.8_linux-x86_64.tar.xz
-          rm zephyr-sdk-0.16.8_linux-x86_64.tar.xz # Delete tarball immediately
-          cd zephyr-sdk-0.16.8
+          wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v1.0.0/zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
+          tar xf zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
+          rm zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz # Delete tarball immediately
+          cd zephyr-sdk-1.0.0_linux-x86_64_gnu
           ./setup.sh -t arm-zephyr-eabi -c
 
-      - name: Cross-Compile OpenOCD for Pi Zero 2 (ARM64)
+      - name: Cross-Compile OpenOCD for A53 (ARM64)
         run: |
           git clone --depth 1 https://github.com/openocd-org/openocd.git ~/openocd
           cd ~/openocd
@@ -88,7 +88,7 @@ jobs:
 
       - name: Build Zephyr Firmware
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu
           cd ~/zephyrproject/zephyr
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
@@ -96,7 +96,7 @@ jobs:
 
       - name: Run Emulation
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-0.16.8
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu
           cd ~/zephyrproject/zephyr
           west build -t run -v
 
