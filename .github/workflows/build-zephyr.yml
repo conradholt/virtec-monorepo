@@ -52,7 +52,7 @@ jobs:
           wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v1.0.0/zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
           tar xf zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
           rm zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz # Delete tarball immediately
-          cd zephyr-sdk-1.0.0_linux-x86_64_gnu
+          cd zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
           ./setup.sh -t arm-zephyr-eabi -c
 
       - name: Cross-Compile OpenOCD for A53 (ARM64)
@@ -88,7 +88,7 @@ jobs:
 
       - name: Build Zephyr Firmware
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
@@ -96,7 +96,7 @@ jobs:
 
       - name: Run Emulation
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
           west build -t run -v
 
