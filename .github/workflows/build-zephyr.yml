@@ -52,7 +52,9 @@ jobs:
           wget -q https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v1.0.0/zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
           tar xf zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
           rm zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz # Delete tarball immediately
-          cd zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
+          ls -lh
+          cd zephyr-sdk-1.0.0_linux-x86_64_gnu
+          ls -lh
           ./setup.sh -t arm-zephyr-eabi -c
 
       - name: Cross-Compile OpenOCD for A53 (ARM64)
