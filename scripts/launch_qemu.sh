@@ -15,12 +15,12 @@ fi
 
 
 ../engine/qemu-official/build/qemu-system-aarch64 \
-    -M raspi4b \
-    -cpu cortex-a72 \
+    -M raspi3b \
+    -cpu cortex-a53 \
     -append "rw earlyprintk loglevel=8 console=ttyAMA0,115200 dwc_otg.lpm_enable=0 root=/dev/mmcblk0p2 rootdelay=1" \
-    -dtb ../../rpi-dtbs/bcm2711-rpi-4-b.dtb \
+    -dtb ../../rpi-dtbs/bcm2710-rpi-3-b-plus.dtb \
     -kernel /home/neo/projects/virtec/zephyr_4b.elf \
-    -m 2G \
+    -m 1G \
     -serial stdio \
     -usb -device usb-mouse -device usb-kbd \
     -device usb-net,netdev=net0 \
