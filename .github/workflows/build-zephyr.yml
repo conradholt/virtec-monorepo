@@ -53,7 +53,7 @@ jobs:
           tar xf zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz
           rm zephyr-sdk-1.0.0_linux-x86_64_gnu.tar.xz # Delete tarball immediately
           ls -lh
-          cd zephyr-sdk-1.0.0_linux-x86_64_gnu
+          cd zephyr-sdk-1.0.0
           ls -lh
           ./setup.sh -t arm-zephyr-eabi -c
 
@@ -90,7 +90,7 @@ jobs:
 
       - name: Build Zephyr Firmware
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
@@ -98,7 +98,7 @@ jobs:
 
       - name: Run Emulation
         run: |
-          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0_linux-x86_64_gnu/zephyr-sdk-1.0.0
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
           west build -t run -v
 
