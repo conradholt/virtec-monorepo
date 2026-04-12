@@ -92,9 +92,11 @@ jobs:
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
+          echo "CONFIG_STDOUT_CONSOLE=y" > samples/hello_world/prj.conf
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
           west build -b qemu_cortex_a53 samples/synchronization
+          west build -t run -v
 
       # - name: Run Emulation
       #   run: |
