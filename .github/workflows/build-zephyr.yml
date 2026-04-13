@@ -119,13 +119,13 @@ jobs:
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
           west build -b qemu_cortex_a53 samples/synchronization
-          timeout 30s west build -t run || code=$?; if [ $code -eq 124 ]; then echo "Test passed/timed out as expected"; else exit $code; fi
       
-      # - name: Run Emulation
-      #   run: |
-      #     export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
-      #     cd ~/zephyrproject/zephyr
-      #     west build -t run -v
+      - name: Run Emulation
+        run: |
+          export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
+          cd ~/zephyrproject/zephyr
+          west flash --dry-run --runner qemu
+          timeout 30s west build -t run || code=$?; if [ $code -eq 124 ]; then echo "Test passed/timed out as expected"; else exit $code; fi
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
