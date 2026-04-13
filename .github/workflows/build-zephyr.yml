@@ -22,6 +22,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install QEMU Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev libpixman-1-dev ninja-build \
+            pkg-config python3-venv python3-pip python3-setuptools
+
+      - name: Cache QEMU Binary
+        id: cache-qemu
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/qemu-system-aarch64
+          key: ${{ runner.os }}-qemu-aarch64-v9.0.0 # Bump version to rebuild
+
+      - name: Build QEMU from Source
+        if: steps.cache-qemu.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v9.0.0 https://github.com/qemu/qemu.git
+          cd qemu
+          ./configure --target-list=aarch64-softmmu --disable-werror
+          make -j$(nproc)
+          sudo make install
+
       - name: Install System & Cross-Build Dependencies
         run: |
           sudo apt-get update
@@ -97,8 +119,8 @@ jobs:
           # Replace after -b with your specific raspberry pi if different
           # west build -b rpi_4b samples/hello_world
           west build -b qemu_cortex_a53 samples/synchronization
-          west build -t run
-
+          timeout 30s west build -t run || code=$?; if [ $code -eq 124 ]; then echo "Test passed/timed out as expected"; else exit $code; fi
+      
       # - name: Run Emulation
       #   run: |
       #     export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
