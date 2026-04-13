@@ -124,7 +124,7 @@ jobs:
         run: |
           export ZEPHYR_SDK_INSTALL_DIR=$HOME/zephyr-sdk-1.0.0
           cd ~/zephyrproject/zephyr
-          timeout 30s west build -t run -- -v || code=$?; if [ $code -eq 124 ]; then echo "Test passed/timed out as expected"; else exit $code; fi
+          timeout 30s west build -t run || code=$?; if [ $code -eq 124 ]; then echo "Test passed/timed out as expected"; else exit $code; fi
 
       - name: Upload Pi-Ready Artifacts
         uses: actions/upload-artifact@v4
