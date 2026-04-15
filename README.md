@@ -4,10 +4,27 @@ This monorepo is part of the Virtec virtualization intiative that aims to build 
 
 Before anything else credit where its due , this doc uses this [Great Template](https://github.com/PurpleBooth/a-good-readme-template/blob/main/README.md) there's a really strong chance that this will be used EVERYWHERE.
 
+[![Zephyr & OpenOCD Cross-Compile for RPi Zero 2](https://github.com/conradholt/virtec-monorepo/actions/workflows/build-zephyr.yml/badge.svg)](https://github.com/conradholt/virtec-monorepo/actions/workflows/build-zephyr.yml)
 
 ##  System Design
 
 <img src="./docs/assets/system-design.jpeg">
+
+## Raspberry Pi Zero 2 Zephyr OS Firmware Load Instructions
+
+From Gemini 3 Fast / Flash 
+
+```
+The Initial Setup (SD Card)
+Before you can use JTAG or OpenOCD, the Raspberry Pi hardware needs a way to boot. Unlike a standard microcontroller (like an STM32) that has built-in flash memory, the Pi Zero 2 boots from the microSD Card.
+• Step A: Format an SD card to FAT32.
+• Step B: You must include the standard Raspberry Pi "bootloader" files (usually found in a Raspbian image or the RPi Firmware Repo):
+• bootcode.bin
+• start.elf
+• fixup.dat
+• Step C: Rename your compiled Zephyr binary (zephyr.bin) to kernel8.img (for 64-bit) and place it on the root of the SD card.
+• Step D: Create a config.txt file on the SD card to tell the Pi how to boot your kernel.
+```
 
 ## Built With
 
