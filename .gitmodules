@@ -1,0 +1,12 @@
+# [submodule "tools/bootgen"]
+# 	path = tools/bootgen
+# 	url = https://github.com/Xilinx/bootgen.git
+# 	branch = xlnx_rel_v2025.2
+# [submodule "engine/xilinx-qemu"]
+# 	path = engine/xilinx-qemu
+# 	url = https://github.com/Xilinx/qemu.git
+# 	branch = xlnx_rel_v2025.2
+[submodule "engine/qemu-official"]
+	path = engine/qemu-official
+	url = https://github.com/qemu/qemu.git
+#ADD qemu-rpi-kernel in here
